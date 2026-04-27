@@ -1137,6 +1137,48 @@ body.light-mode .reply-message::after {
     background: linear-gradient(transparent, rgba(241, 242, 245, 0.8));
 }
 
+/* Light mode reply styles */
+body.light-mode .msg-reply {
+    background: rgba(0, 128, 105, 0.1);
+    border-left-color: #008069;
+}
+
+body.light-mode .msg-reply:hover {
+    background: rgba(0, 128, 105, 0.2);
+}
+
+body.light-mode .msg-reply:active {
+    background: rgba(0, 128, 105, 0.3);
+}
+
+body.light-mode .reply-text {
+    color: #667781;
+}
+
+body.light-mode .reply-icon {
+    color: #008069;
+}
+
+body.light-mode .reply-label {
+    color: #008069;
+}
+
+body.light-mode .msg.highlight {
+    background: rgba(0, 128, 105, 0.2) !important;
+    border-color: #008069 !important;
+}
+
+body.light-mode @keyframes highlightPulse {
+    0% {
+        background: rgba(0, 128, 105, 0.4);
+        transform: scale(1.02);
+    }
+    100% {
+        background: rgba(0, 128, 105, 0.2);
+        transform: scale(1);
+    }
+}
+
 /* Light mode mobile styling */
 body.light-mode .msg-content {
     color: #111b21 !important;
@@ -1799,6 +1841,29 @@ transform: scale(1.05);
 
 .reply-content {
     margin-left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.reply-icon {
+    font-size: 10px;
+    color: #25D366;
+}
+
+.reply-label {
+    font-size: 10px;
+    color: #25D366;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .reply-text {
@@ -1806,6 +1871,26 @@ transform: scale(1.05);
     font-size: 13px;
     font-style: italic;
     line-height: 1.3;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Message highlight for reply navigation */
+.msg.highlight {
+    background: rgba(37, 211, 102, 0.2) !important;
+    border: 2px solid #25D366 !important;
+    animation: highlightPulse 1s ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0% {
+        background: rgba(37, 211, 102, 0.4);
+        transform: scale(1.02);
+    }
+    100% {
+        background: rgba(37, 211, 102, 0.2);
+        transform: scale(1);
+    }
 }
 
 /* Reply input styles */
@@ -4482,9 +4567,13 @@ function renderMsg(m){
     let replyPreview = '';
     if (m.reply_to_id && m.reply_to_content) {
         replyPreview = `
-            <div class="msg-reply" onclick="scrollToMessage(${m.reply_to_id})">
+            <div class="msg-reply" onclick="scrollToMessage(${m.reply_to_id})" title="Click to go to original message">
                 <div class="reply-line"></div>
                 <div class="reply-content">
+                    <div class="reply-header">
+                        <i class="fas fa-reply reply-icon"></i>
+                        <span class="reply-label">Replying to</span>
+                    </div>
                     <div class="reply-text">${m.reply_to_content.length > 50 ? m.reply_to_content.substring(0, 50) + '...' : m.reply_to_content}</div>
                 </div>
             </div>
