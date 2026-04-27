@@ -1011,6 +1011,132 @@ body.light-mode .image-viewer-close:hover {
     }
 }
 
+/* Message Animations */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reply Container Styles */
+#replyContainer {
+    display: none;
+    background: rgba(37, 211, 102, 0.1);
+    border-left: 3px solid #25D366;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    animation: slideUp 0.3s ease-out;
+}
+
+#replyContainer.active {
+    display: block;
+}
+
+.reply-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.reply-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reply-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #25D366;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.reply-close-btn {
+    background: none;
+    border: none;
+    color: #8696a0;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.reply-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f0f2f5;
+}
+
+.reply-message {
+    color: #f0f2f5;
+    font-size: 14px;
+    font-style: italic;
+    opacity: 0.9;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 60px;
+    overflow: hidden;
+    position: relative;
+}
+
+.reply-message::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(transparent, rgba(32, 44, 51, 0.8));
+}
+
+/* Light mode reply styles */
+body.light-mode #replyContainer {
+    background: rgba(0, 128, 105, 0.1);
+    border-left-color: #008069;
+}
+
+body.light-mode .reply-info {
+    color: #008069;
+}
+
+body.light-mode .reply-message {
+    color: #111b21;
+}
+
+body.light-mode .reply-message::after {
+    background: linear-gradient(transparent, rgba(241, 242, 245, 0.8));
+}
+
 /* Light mode mobile styling */
 body.light-mode .msg-content {
     color: #111b21 !important;
@@ -4432,104 +4558,43 @@ function replyToMessage(messageId, content, senderId) {
     // Mobile detection
     const isMobile = window.innerWidth <= 768;
     
-    // Show reply input with mobile enhancements
-    const replyContainer = document.getElementById('replyInputContainer');
-    if (!replyContainer) {
-        // Create reply input container if it doesn't exist
-        const inputContainer = document.querySelector('.input-container');
-        if (!inputContainer) return; // Safety check
-        
-        const mobileClass = isMobile ? 'mobile-reply' : '';
-        const replyHtml = `
-            <div id="replyInputContainer" class="reply-input-container ${mobileClass}">
-                <div class="reply-content">
-                    <div style="color:#8696a0;font-size:12px;margin-bottom:4px;">Replying to:</div>
-                    <div style="color:#f0f2f5;font-size:13px;">${content.length > 30 ? content.substring(0, 30) + '...' : content}</div>
+    // Show reply UI with enhanced styling
+    const replyContainer = document.getElementById('replyContainer');
+    if (replyContainer) {
+        replyContainer.classList.add('active');
+        replyContainer.innerHTML = `
+            <div class="reply-content">
+                <div class="reply-header">
+                    <div class="reply-info">
+                        <i class="fas fa-reply"></i>
+                        <span class="reply-label">Replying</span>
+                    </div>
+                    <button class="reply-close-btn" onclick="cancelReply()" aria-label="Cancel reply">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <button class="reply-cancel" onclick="cancelReply()">×</button>
+                <div class="reply-message">${content}</div>
             </div>
         `;
-        inputContainer.insertAdjacentHTML('beforebegin', replyHtml);
         
-        // Add mobile-specific CSS if needed
-        if (isMobile && !document.querySelector('#mobileReplyCSS')) {
-            const style = document.createElement('style');
-            style.id = 'mobileReplyCSS';
-            style.textContent = `
-                .mobile-reply {
-                    background: rgba(37, 211, 102, 0.15);
-                    border: 1px solid rgba(37, 211, 102, 0.3);
-                    animation: slideUp 0.3s ease-out;
-                }
-                
-                @keyframes slideUp {
-                    from { 
-                        opacity: 0; 
-                        transform: translateY(20px); 
-                    }
-                    to { 
-                        opacity: 1; 
-                        transform: translateY(0); 
-                    }
-                }
-                
-                .mobile-reply .reply-content {
-                    flex: 1;
-                    margin-right: 10px;
-                }
-                
-                .mobile-reply .reply-cancel {
-                    flex-shrink: 0;
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    } else {
-        // Update existing reply container
-        const replyContentElement = replyContainer.querySelector('.reply-content div:last-child');
-        if (replyContentElement) {
-            replyContentElement.textContent = content.length > 30 ? content.substring(0, 30) + '...' : content;
-        }
-        replyContainer.classList.add('active');
-        
-        // Add mobile class if needed
-        if (isMobile) {
-            replyContainer.classList.add('mobile-reply');
-        }
+        // Add animation
+        replyContainer.style.animation = 'slideUp 0.3s ease-out';
     }
     
-    // Focus on message input with mobile optimization
-    const messageInput = document.getElementById('msg');
-    if (messageInput) {
-        messageInput.focus();
-    }
+    // Focus on input field with delay for animation
+    setTimeout(() => {
+        document.getElementById('msg').focus();
+    }, 300);
     
-    // Mobile-specific enhancements
+    // On mobile, scroll to input smoothly
     if (isMobile) {
-        // Add haptic feedback
-        if (navigator.vibrate) {
-            navigator.vibrate(30);
-        }
-        
-        // Ensure virtual keyboard doesn't hide the reply input
         setTimeout(() => {
-            const currentReplyContainer = document.getElementById('replyInputContainer');
-            if (currentReplyContainer && currentReplyContainer.scrollIntoView) {
-                currentReplyContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }
-        }, 300);
-        
-        // Add visual feedback
-        const currentReplyContainer = document.getElementById('replyInputContainer');
-        if (currentReplyContainer && currentReplyContainer.style) {
-            currentReplyContainer.style.animation = 'none';
-            setTimeout(() => {
-                if (currentReplyContainer.style) {
-                    currentReplyContainer.style.animation = '';
-                }
-            }, 10);
-        }
+            document.getElementById('msg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
     }
+    
+    // Show notification
+    showNotification('Reply mode activated', 'info');
 }
 
 function cancelReply() {
@@ -5546,14 +5611,23 @@ function send(){
 
     axios.post('/send', messageData).then(res=>{
         if (res.data) {
-            document.getElementById('messages').innerHTML += renderMsg(res.data);
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML += renderMsg(res.data);
             document.getElementById('msg').value='';
             cancelReply(); // Cancel reply after sending
-            scrollBottom();
+            
+            // Use smart scroll for better UX
+            setTimeout(() => smartScrollBottom(), 100);
+            
+            // Add send animation
+            const newMessage = messagesContainer.lastElementChild;
+            if (newMessage) {
+                newMessage.style.animation = 'slideInRight 0.3s ease-out';
+            }
         }
     }).catch(error => {
         console.warn('Error sending message:', error);
-        alert('Failed to send message. Please try again.');
+        showNotification('Failed to send message. Please try again.', 'error');
     });
 }
 
@@ -5676,14 +5750,21 @@ function handleAudioUpload(event) {
         }
     }).then(res => {
         if (res.data) {
-            document.getElementById('messages').innerHTML += renderMsg(res.data);
-            cancelReply(); // Cancel reply after sending
-            scrollBottom();
-            showNotification('Audio sent successfully');
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML += renderMsg(res.data);
+            
+            // Use smart scroll for better UX
+            setTimeout(() => smartScrollBottom(), 100);
+            
+            // Add send animation
+            const newMessage = messagesContainer.lastElementChild;
+            if (newMessage) {
+                newMessage.style.animation = 'slideInRight 0.3s ease-out';
+            }
         }
     }).catch(error => {
         console.warn('Error sending audio:', error);
-        showNotification('Failed to send audio. Please try again.');
+        showNotification('Failed to send audio. Please try again.', 'error');
     }).finally(() => {
         removeAudioLoading(loadingId);
         // Clear file input
@@ -5929,23 +6010,52 @@ function sendImage(){
     form.append('image',file);
     form.append('receiver_id',receiver_id);
 
-    axios.post('/send-image',form).then(res=>{
+    axios.post('/send-image',form).then(res => {
         if (res.data) {
-            document.getElementById('messages').innerHTML += renderMsg(res.data);
-            scrollBottom();
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML += renderMsg(res.data);
+            
+            // Use smart scroll for better UX
+            setTimeout(() => smartScrollBottom(), 100);
+            
+            // Add send animation
+            const newMessage = messagesContainer.lastElementChild;
+            if (newMessage) {
+                newMessage.style.animation = 'slideInRight 0.3s ease-out';
+            }
         }
     }).catch(error => {
         console.warn('Error sending image:', error);
-        alert('Failed to send image. Please try again.');
+        showNotification('Failed to send image. Please try again.', 'error');
     });
     
     // Clear file input
     document.getElementById('img').value = '';
 }
 
-function scrollBottom(){
+function scrollBottom(smooth = true){
     let box = document.getElementById('messages');
-    box.scrollTop = box.scrollHeight;
+    if (smooth) {
+        // Smooth scroll with animation
+        box.scrollTo({
+            top: box.scrollHeight,
+            behavior: 'smooth'
+        });
+    } else {
+        // Instant scroll
+        box.scrollTop = box.scrollHeight;
+    }
+}
+
+// Enhanced scroll with user detection
+function smartScrollBottom() {
+    const messagesContainer = document.getElementById('messages');
+    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 50;
+    
+    // Only auto-scroll if user is near bottom or if message is from current user
+    if (isAtBottom) {
+        scrollBottom(true);
+    }
 }
 
 // TYPING INDICATOR
@@ -5973,10 +6083,19 @@ function checkNewMessages() {
         const newMessages = res.data.filter(m => m && m.id > lastMessageId);
         
         if (newMessages.length > 0) {
+            const messagesContainer = document.getElementById('messages');
             newMessages.forEach(msg => {
                 // Only show messages from other users (received messages)
                 if (msg.sender_id != {{ auth()->id() }}) {
-                    document.getElementById('messages').innerHTML += renderMsg(msg);
+                    messagesContainer.innerHTML += renderMsg(msg);
+                    
+                    // Add receive animation
+                    const newMessage = messagesContainer.lastElementChild;
+                    if (newMessage) {
+                        newMessage.style.animation = 'slideInLeft 0.3s ease-out';
+                    }
+                    
+                    // Play notification sound
                     document.getElementById('tone').play();
                 }
             });
@@ -5987,7 +6106,8 @@ function checkNewMessages() {
                 lastMessageId = Math.max(...validMessages.map(m => m.id));
             }
             
-            scrollBottom();
+            // Use smart scroll for received messages
+            setTimeout(() => smartScrollBottom(), 100);
         }
     }).catch(error => {
         // Silently handle errors to prevent console spam
